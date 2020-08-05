@@ -23,9 +23,12 @@ jobs:
           mkdir linux-amd64
           mkdir win-amd64
           mkdir darwin-amd64
-          mv changelog linux-amd64/changelog
-          mv changelog.exe win-amd64/changelog.exe
-          mv darwin_changelog darwin-amd64/changelog
+          mv svgtojsx linux-amd64/svgtojsx
+          mv svgtojsx.exe win-amd64/svgtojsx.exe
+          mv svgtojsx darwin-amd64/svgtojsx
+
+          chmod 655 +x linux-amd64/svgtojsx
+          chmod 655 +x darwin-amd64/svgtojsx
 
           cp template.tmpl linux-amd64/template.tmpl
           cp template.tmpl win-amd64/template.tmpl
