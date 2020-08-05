@@ -1,0 +1,74 @@
+name: Build and Create Release
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-linux-amd64: 
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get the version
+        id: get_version
+        run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+      - uses: actions/checkout@v2
+      - uses: actions/setup-go@v2
+      - name: Build for linux amd64
+        run: |
+          go build -o svgtojsx main.go
+          GOOS=windows GOARCH=amd64 go build -o svgtojsx.exe main.go
+          GOOS=darwin GOARCH=amd64 go build -o svgtojsx main.go
+      - name: Create artifact directory
+        run: |
+          mkdir linux-amd64
+          mkdir win-amd64
+          mkdir darwin-amd64
+          mv changelog linux-amd64/changelog
+          mv changelog.exe win-amd64/changelog.exe
+          mv darwin_changelog darwin-amd64/changelog
+
+          cp template.tmpl linux-amd64/template.tmpl
+          cp template.tmpl win-amd64/template.tmpl
+          cp template.tmpl darwin-amd64/template.tmpl
+
+          zip -r package-${{ steps.get_version.outputs.VERSION }}-linux-amd64.zip linux-amd64/
+          zip -r package-${{ steps.get_version.outputs.VERSION }}-win-amd64.zip win-amd64/
+          zip -r package-${{ steps.get_version.outputs.VERSION }}-darwin-amd64.zip darwin-amd64/
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft: false
+          prerelease: false
+      - name: Upload Release Linux Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./package-${{ steps.get_version.outputs.VERSION }}-linux-amd64.zip
+          asset_name: package-${{ steps.get_version.outputs.VERSION }}-linux-amd64.zip
+          asset_content_type: application/zip
+      - name: Upload Release Windows Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./package-${{ steps.get_version.outputs.VERSION }}-win-amd64.zip
+          asset_name: package-${{ steps.get_version.outputs.VERSION }}-win-amd64.zip
+          asset_content_type: application/zip
+      - name: Upload Release Darwin Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./package-${{ steps.get_version.outputs.VERSION }}-darwin-amd64.zip
+          asset_name: package-${{ steps.get_version.outputs.VERSION }}-darwin-amd64.zip
+          asset_content_type: application/zip
