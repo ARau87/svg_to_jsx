@@ -17,7 +17,7 @@ jobs:
         run: |
           go build -o svgtojsx main.go
           GOOS=windows GOARCH=amd64 go build -o svgtojsx.exe main.go
-          GOOS=darwin GOARCH=amd64 go build -o svgtojsx main.go
+          GOOS=darwin GOARCH=amd64 go build -o darwin_svgtojsx main.go
       - name: Create artifact directory
         run: |
           mkdir linux-amd64
@@ -26,7 +26,7 @@ jobs:
 
           mv svgtojsx linux-amd64/svgtojsx
           mv svgtojsx.exe win-amd64/svgtojsx.exe
-          mv svgtojsx darwin-amd64/svgtojsx
+          mv darwin_svgtojsx darwin-amd64/svgtojsx
 
           cp template.tmpl linux-amd64/template.tmpl
           cp template.tmpl win-amd64/template.tmpl
